@@ -44,8 +44,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     FusedLocationProviderClient mFusedLocationProviderClient;
     Location lastLocation;
     TextView tv;
+
+
+    //Firebase Variables
     private FirebaseAuth mFirebaseAuth;
     private FirebaseUser mFirebaseuser;
+
+
+
     private String mUsername;
     private String mPhotoUrl;
 
