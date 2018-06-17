@@ -54,6 +54,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
 
     //Firebase Variables
+    static {
+        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+    }
     private FirebaseAuth mFirebaseAuth;
     private FirebaseUser mFirebaseuser;
     FirebaseDatabase database;
@@ -63,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private ChildEventListener childEventListener;
     private String mEmail;
     private String mUid;
+
 
     private static final String TAG = "MainActivity";
 
@@ -93,11 +97,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         tv=findViewById(R.id.textView);
         /* firebase initialization */
         mUsername = ANONYMOUS;
-
+//        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         mFirebaseAuth=FirebaseAuth.getInstance();
         mFirebaseuser=mFirebaseAuth.getCurrentUser();
         database = FirebaseDatabase.getInstance();
         myRef = database.getReference("Locations");
+        myRef.keepSynced(true);
 
         if(mFirebaseuser==null)
         {
@@ -107,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
         else {
             mUsername=mFirebaseuser.getDisplayName();
+
             mEmail=mFirebaseuser.getEmail();
             mUid=mFirebaseuser.getUid();
             if(mFirebaseuser.getPhotoUrl()!=null)
@@ -121,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 Log.d(TAG, "onChildAdded:" + dataSnapshot.getKey());
 
                 FirebaseLocationData fld = dataSnapshot.getValue(FirebaseLocationData.class);
-                Toast.makeText(MainActivity.this, fld.getEmail()+" added", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(MainActivity.this, fld.getEmail()+" added", Toast.LENGTH_SHORT).show();
 
             }
 
@@ -199,6 +205,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         switch (item.getItemId())
         {
             case R.id.profile:
+                startActivity(new Intent(MainActivity.this,ProfileActivity.class));
+                finish();
                 return true;
             case R.id.sign_out:
                 mFirebaseAuth.signOut();
