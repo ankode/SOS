@@ -7,14 +7,26 @@ public class FirebaseLocationData {
     double latitude;
     double longitude;
     String time;
+    String sos_time;
+
     public FirebaseLocationData() {
     }
 
-    public FirebaseLocationData(String email, double latitude, double longitude, String time) {
+    public FirebaseLocationData(String email, double latitude, double longitude, String time, String sos_time) {
         this.email = email;
         this.latitude = latitude;
         this.longitude = longitude;
         this.time = time;
+        this.sos_time = sos_time;
+    }
+
+
+    public String getSos_time() {
+        return sos_time;
+    }
+
+    public void setSos_time(String sos_time) {
+        this.sos_time = sos_time;
     }
 
     public String getEmail() {

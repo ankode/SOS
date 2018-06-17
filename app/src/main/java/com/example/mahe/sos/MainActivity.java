@@ -1,18 +1,23 @@
 package com.example.mahe.sos;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,6 +28,7 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.flags.impl.DataUtils;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
@@ -39,6 +45,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.DateFormat;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
@@ -48,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     LocationRequest locationRequest;
     private static final int UPDATE_INTERVAL = 15 * 1000;
     private static final int FASTEST_UPDATE_INTERVAL = 2 * 1000;
+    private static final int notification_request_code = 100;
     FusedLocationProviderClient mFusedLocationProviderClient;
     Location lastLocation,lastLocationGpsProvider;
     TextView tv;
@@ -67,6 +75,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private String mEmail;
     private String mUid;
 
+    //Notification
+    NotificationManager nm;
+    Notification n;
+    Notification.Builder nb;
 
     private static final String TAG = "MainActivity";
 
@@ -95,6 +107,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         tv=findViewById(R.id.textView);
+        nm=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         /* firebase initialization */
         mUsername = ANONYMOUS;
 //        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
@@ -111,9 +124,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             return;
         }
         else {
-            mUsername=mFirebaseuser.getDisplayName();
 
             mEmail=mFirebaseuser.getEmail();
+            if(!TextUtils.isEmpty(mFirebaseuser.getDisplayName()))
+                mUsername=mFirebaseuser.getDisplayName();
+            else
+                mUsername=mEmail.split("@")[0];
             mUid=mFirebaseuser.getUid();
             if(mFirebaseuser.getPhotoUrl()!=null)
                 mPhotoUrl=mFirebaseuser.getPhotoUrl().toString();
@@ -135,11 +151,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             public void onChildChanged(DataSnapshot dataSnapshot, String previousChildName) {
                 Log.d(TAG, "onChildChanged:" + dataSnapshot.getKey());
 
-                // A comment has changed, use the key to determine if we are displaying this
-                // comment and if so displayed the changed comment.
                 FirebaseLocationData fld = dataSnapshot.getValue(FirebaseLocationData.class);
                 String locKey = dataSnapshot.getKey();
-                Toast.makeText(MainActivity.this,fld.getEmail()+" changed", Toast.LENGTH_SHORT).show();
+                nb= new Notification.Builder(MainActivity.this);
+                nb.setContentTitle("Emergency");
+                nb.setContentText("SOS broadcasted from "+fld.email.split("@")[0]);
+                nb.setSmallIcon(android.R.drawable.ic_dialog_alert);
+                nb.setDefaults(Notification.DEFAULT_ALL);
+                Intent i =new Intent(MainActivity.this,MainActivity.class);
+                nb.setAutoCancel(false);
+                PendingIntent pi =PendingIntent.getActivity(MainActivity.this,notification_request_code,i,PendingIntent.FLAG_UPDATE_CURRENT);
+                nb.setContentIntent(pi);
+                n=nb.build();
+                nm.notify(notification_request_code,n);
+//                Toast.makeText(MainActivity.this,fld.getEmail()+" changed", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -334,7 +359,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
 
     private void updateUserLocationToFirebase( Location location) {
-        FirebaseLocationData fld= new FirebaseLocationData(mEmail,location.getLatitude() ,location.getLongitude(),DateFormat.getTimeInstance().format(location.getTime()));
+        FirebaseLocationData fld= new FirebaseLocationData(mEmail,location.getLatitude() ,location.getLongitude(),DateFormat.getTimeInstance().format(location.getTime()),DateFormat.getTimeInstance().format(new Date()));
         myRef.child(mUid).setValue(fld);
     }
 
