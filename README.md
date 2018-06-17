@@ -10,8 +10,8 @@ Developed by Ankush Anshuman.
 - [x] Get user location continiously
 - [x] Firebase authentication using Email/Password
 - [ ] Firebase authentication using Google SignIn
-- [ ] Populate Firebase Database
-- [ ] Upload location to FIrebase Database
+- [x] Populate Firebase Database
+- [x] Upload location to FIrebase Database
 - [ ] Broadcast/Notify to Other Users
 - [ ] Recieve/Read Location of other user
 - [ ] Show Location on MapsActivity
