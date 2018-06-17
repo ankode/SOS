@@ -14,6 +14,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,6 +32,8 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.DateFormat;
 
@@ -49,11 +53,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     //Firebase Variables
     private FirebaseAuth mFirebaseAuth;
     private FirebaseUser mFirebaseuser;
-
+    FirebaseDatabase database = FirebaseDatabase.getInstance();
+    DatabaseReference myRef = database.getReference("Locations");
 
 
     private String mUsername;
     private String mPhotoUrl;
+    private String mEmail;
 
     private static final String TAG = "MainActivity";
 
@@ -74,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         tv=findViewById(R.id.textView);
+        /* firebase initialization */
         mUsername = ANONYMOUS;
         mFirebaseAuth=FirebaseAuth.getInstance();
         mFirebaseuser=mFirebaseAuth.getCurrentUser();
@@ -85,8 +92,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
         else {
             mUsername=mFirebaseuser.getDisplayName();
+            mEmail=mFirebaseuser.getEmail();
             if(mFirebaseuser.getPhotoUrl()!=null)
                 mPhotoUrl=mFirebaseuser.getPhotoUrl().toString();
+            Toast.makeText(this, "Welcome "+mUsername+"\n"+mFirebaseuser.getUid(), Toast.LENGTH_SHORT).show();
+
         }
 
 
@@ -113,7 +123,32 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
 
+        getMenuInflater().inflate(R.menu.firebase_menu,menu);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId())
+        {
+            case R.id.profile:
+                return true;
+            case R.id.sign_out:
+                mFirebaseAuth.signOut();
+                mUsername=ANONYMOUS;
+                startActivity(new Intent(MainActivity.this,LoginActivity.class));
+                finish();
+                return  true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
     public void startSos(View view) {
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -144,6 +179,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 //                });
 
         LocationManager lm= (LocationManager) getSystemService(LOCATION_SERVICE);
+
         Toast.makeText(this, "GPS location without google client\n"+lm.getLastKnownLocation(LocationManager.GPS_PROVIDER).toString(), Toast.LENGTH_SHORT).show();
 
 
@@ -221,6 +257,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
+
+
+
+    private void writeNewLocation( String email, Location location, String time) {
+        FirebaseLocationData fld= new FirebaseLocationData(location,email,time);
+        myRef.child(email).setValue(fld);
+    }
+
 
     public void firebaseSignOut(View view) {
         mFirebaseAuth.signOut();
