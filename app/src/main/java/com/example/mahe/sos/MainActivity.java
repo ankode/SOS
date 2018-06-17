@@ -32,6 +32,9 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -53,10 +56,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     //Firebase Variables
     private FirebaseAuth mFirebaseAuth;
     private FirebaseUser mFirebaseuser;
-    FirebaseDatabase database = FirebaseDatabase.getInstance();
-    DatabaseReference myRef = database.getReference("Locations");
+    FirebaseDatabase database;
+    DatabaseReference myRef;
     private String mUsername;
     private String mPhotoUrl;
+    private ChildEventListener childEventListener;
     private String mEmail;
     private String mUid;
 
@@ -65,12 +69,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onStart() {
         gac.connect();
+        if (childEventListener != null) {
+            myRef.addChildEventListener(childEventListener);
+            Log.d(TAG, "onStart: ChildEventListener Attached");
+        }
         super.onStart();
     }
 
     @Override
     protected void onStop() {
         gac.disconnect();
+        if (childEventListener != null) {
+            myRef.removeEventListener(childEventListener);
+            Log.d(TAG, "onStop: ChildEventListener Removed");
+        }
         super.onStop();
     }
 
@@ -81,8 +93,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         tv=findViewById(R.id.textView);
         /* firebase initialization */
         mUsername = ANONYMOUS;
+
         mFirebaseAuth=FirebaseAuth.getInstance();
         mFirebaseuser=mFirebaseAuth.getCurrentUser();
+        database = FirebaseDatabase.getInstance();
+        myRef = database.getReference("Locations");
+
         if(mFirebaseuser==null)
         {
             startActivity(new Intent(this,LoginActivity.class));
@@ -98,6 +114,52 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Toast.makeText(this, "Welcome "+mUsername+"\n"+mUid, Toast.LENGTH_SHORT).show();
 
         }
+
+         childEventListener = new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
+                Log.d(TAG, "onChildAdded:" + dataSnapshot.getKey());
+
+                FirebaseLocationData fld = dataSnapshot.getValue(FirebaseLocationData.class);
+                Toast.makeText(MainActivity.this, fld.getEmail()+" added", Toast.LENGTH_SHORT).show();
+
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String previousChildName) {
+                Log.d(TAG, "onChildChanged:" + dataSnapshot.getKey());
+
+                // A comment has changed, use the key to determine if we are displaying this
+                // comment and if so displayed the changed comment.
+                FirebaseLocationData fld = dataSnapshot.getValue(FirebaseLocationData.class);
+                String locKey = dataSnapshot.getKey();
+                Toast.makeText(MainActivity.this,fld.getEmail()+" changed", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                Log.d(TAG, "onChildRemoved:" + dataSnapshot.getKey());
+
+                String locKey = dataSnapshot.getKey();
+
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String previousChildName) {
+                Log.d(TAG, "onChildMoved:" + dataSnapshot.getKey());
+                FirebaseLocationData fld = dataSnapshot.getValue(FirebaseLocationData.class);
+                String locKey = dataSnapshot.getKey();
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w(TAG, ":onCancelled", databaseError.toException());
+            }
+        };
+        if(childEventListener!=null)
+            Log.d(TAG, "onCreate: childEventListenerCreated");
 
 
 
@@ -264,7 +326,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
 
     private void updateUserLocationToFirebase( Location location) {
-        FirebaseLocationData fld= new FirebaseLocationData(location,mEmail, DateFormat.getTimeInstance().format(location.getTime()));
+        FirebaseLocationData fld= new FirebaseLocationData(mEmail,location.getLatitude() ,location.getLongitude(),DateFormat.getTimeInstance().format(location.getTime()));
         myRef.child(mUid).setValue(fld);
     }
 

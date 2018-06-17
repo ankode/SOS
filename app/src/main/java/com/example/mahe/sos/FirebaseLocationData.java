@@ -4,16 +4,16 @@ import android.location.Location;
 
 public class FirebaseLocationData {
     String email;
-    Location location;
-
+    double latitude;
+    double longitude;
     String time;
-
     public FirebaseLocationData() {
     }
 
-    public FirebaseLocationData(Location location, String email, String time) {
-        this.location = location;
+    public FirebaseLocationData(String email, double latitude, double longitude, String time) {
         this.email = email;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.time = time;
     }
 
@@ -25,6 +25,22 @@ public class FirebaseLocationData {
         this.email = email;
     }
 
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
     public String getTime() {
         return time;
     }
@@ -33,12 +49,6 @@ public class FirebaseLocationData {
         this.time = time;
     }
 
-    public Location getLocation() {
-        return location;
-    }
 
-    public void setLocation(Location location) {
-        this.location = location;
-    }
 }
 
