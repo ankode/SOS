@@ -10,9 +10,12 @@ Developed by Ankush Anshuman.
 - [x] Get user location continiously
 - [x] Firebase authentication using Email/Password
 - [ ] Firebase authentication using Google SignIn
-- [ ] Populate Firebase Database
-- [ ] Upload location to FIrebase Database
+- [x] Populate Firebase Database
+- [x] Upload location to Firebase Database
+- [x] Implement Firebase Database to cache offline locally
+- [x] Sync between online and offline database
 - [ ] Broadcast/Notify to Other Users
+- [ ] Create Profile update/view Activity
 - [ ] Recieve/Read Location of other user
 - [ ] Show Location on MapsActivity
 - [ ] Improve UI
