@@ -2,7 +2,7 @@ package com.example.mahe.sos;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.DialogInterface;
+
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -21,7 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
+
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationListener;
@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final int UPDATE_INTERVAL = 15 * 1000;
     private static final int FASTEST_UPDATE_INTERVAL = 2 * 1000;
     FusedLocationProviderClient mFusedLocationProviderClient;
-    Location lastLocation;
+    Location lastLocation,lastLocationGpsProvider;
     TextView tv;
 
 
@@ -55,11 +55,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private FirebaseUser mFirebaseuser;
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference myRef = database.getReference("Locations");
-
-
     private String mUsername;
     private String mPhotoUrl;
     private String mEmail;
+    private String mUid;
 
     private static final String TAG = "MainActivity";
 
@@ -93,9 +92,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         else {
             mUsername=mFirebaseuser.getDisplayName();
             mEmail=mFirebaseuser.getEmail();
+            mUid=mFirebaseuser.getUid();
             if(mFirebaseuser.getPhotoUrl()!=null)
                 mPhotoUrl=mFirebaseuser.getPhotoUrl().toString();
-            Toast.makeText(this, "Welcome "+mUsername+"\n"+mFirebaseuser.getUid(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Welcome "+mUsername+"\n"+mUid, Toast.LENGTH_SHORT).show();
 
         }
 
@@ -179,6 +179,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 //                });
 
         LocationManager lm= (LocationManager) getSystemService(LOCATION_SERVICE);
+        lastLocationGpsProvider=lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        //write data to firebase
+        updateUserLocationToFirebase(lastLocationGpsProvider);
 
         Toast.makeText(this, "GPS location without google client\n"+lm.getLastKnownLocation(LocationManager.GPS_PROVIDER).toString(), Toast.LENGTH_SHORT).show();
 
@@ -260,9 +263,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
 
 
-    private void writeNewLocation( String email, Location location, String time) {
-        FirebaseLocationData fld= new FirebaseLocationData(location,email,time);
-        myRef.child(email).setValue(fld);
+    private void updateUserLocationToFirebase( Location location) {
+        FirebaseLocationData fld= new FirebaseLocationData(location,mEmail, DateFormat.getTimeInstance().format(location.getTime()));
+        myRef.child(mUid).setValue(fld);
     }
 
 
