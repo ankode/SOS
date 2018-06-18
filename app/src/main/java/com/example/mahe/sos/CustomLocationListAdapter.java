@@ -53,7 +53,7 @@ public class CustomLocationListAdapter extends ArrayAdapter {
 
 
         TextView name = listItem.findViewById(R.id.pname);
-        name.setText(fld.getEmail().split("@")[0]);
+        name.setText(fld.getName());
         TextView email = listItem.findViewById(R.id.pemail);
         email.setText(fld.getEmail());
         TextView loc = listItem.findViewById(R.id.plocation);

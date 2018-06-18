@@ -9,6 +9,15 @@ public class FirebaseLocationData {
     String time;
     String sos_time;
     boolean privacy = false;
+    String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public boolean isPrivacy() {
         return privacy;
@@ -19,14 +28,14 @@ public class FirebaseLocationData {
     }
 
 
-
-    public FirebaseLocationData(String email, double latitude, double longitude, String time, String sos_time, boolean privacy) {
+    public FirebaseLocationData(String email, double latitude, double longitude, String time, String sos_time, boolean privacy, String name) {
         this.email = email;
         this.latitude = latitude;
         this.longitude = longitude;
         this.time = time;
         this.sos_time = sos_time;
         this.privacy = privacy;
+        this.name = name;
     }
 
     public FirebaseLocationData() {

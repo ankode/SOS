@@ -38,6 +38,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -134,12 +135,28 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mEmail=mFirebaseuser.getEmail();
             if(!TextUtils.isEmpty(mFirebaseuser.getDisplayName()))
                 mUsername=mFirebaseuser.getDisplayName();
-            else
-                mUsername=mEmail.split("@")[0];
+            else {
+                mUsername = mEmail.split("@")[0];
+                UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                        .setDisplayName(mUsername).build();
+
+                mFirebaseuser.updateProfile(profileUpdates)
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful()) {
+                                    Log.d(TAG, "onComplete: name intialized as "+mUsername);
+                                }
+                            }
+                        });
+
+
+
+            }
             mUid=mFirebaseuser.getUid();
             if(mFirebaseuser.getPhotoUrl()!=null)
                 mPhotoUrl=mFirebaseuser.getPhotoUrl().toString();
-            Toast.makeText(this, "Welcome "+mUsername+"\n"+mUid, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Welcome "+mUsername, Toast.LENGTH_SHORT).show();
 
         }
 
@@ -161,17 +178,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 String locKey = dataSnapshot.getKey();
                 nb= new Notification.Builder(MainActivity.this);
                 nb.setContentTitle("Emergency");
-                nb.setContentText("SOS broadcasted from "+fld.email.split("@")[0]);
+                nb.setContentText("SOS broadcasted from "+fld.getName());
                 nb.setSmallIcon(android.R.drawable.ic_dialog_alert);
                 nb.setDefaults(Notification.DEFAULT_ALL);
-                Intent i =new Intent(MainActivity.this,MapsActivity.class);
-                Bundle b = new Bundle();
-                b.putDouble("lat", fld.getLatitude());
-                b.putDouble("long", fld.getLongitude());
-                b.putString("name", fld.getEmail().split("@")[0]);
-                b.putString("time",fld.getSos_time());
-                i.putExtras(b);
-
+                Intent i =new Intent(MainActivity.this,MainActivity.class);
                 nb.setAutoCancel(false);
                 PendingIntent pi =PendingIntent.getActivity(MainActivity.this,notification_request_code,i,PendingIntent.FLAG_UPDATE_CURRENT);
                 nb.setContentIntent(pi);
@@ -379,6 +389,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     private void updateUserLocationToFirebase( Location location) {
         FirebaseLocationData fld= new FirebaseLocationData(mEmail,location.getLatitude() ,location.getLongitude(),DateFormat.getTimeInstance().format(location.getTime()),DateFormat.getTimeInstance().format(new Date()));
+        fld.setName(mUsername);
         myRef.child(mUid).setValue(fld);
     }
 
