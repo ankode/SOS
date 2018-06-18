@@ -102,6 +102,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         super.onStop();
     }
 
+
+    
+
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -143,7 +149,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 Log.d(TAG, "onChildAdded:" + dataSnapshot.getKey());
 
                 FirebaseLocationData fld = dataSnapshot.getValue(FirebaseLocationData.class);
-//                Toast.makeText(MainActivity.this, fld.getEmail()+" added", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, fld.getEmail()+" added", Toast.LENGTH_SHORT).show();
 
             }
 
@@ -231,7 +237,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         {
             case R.id.profile:
                 startActivity(new Intent(MainActivity.this,ProfileActivity.class));
-                finish();
+
                 return true;
             case R.id.sign_out:
                 mFirebaseAuth.signOut();
@@ -239,7 +245,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 startActivity(new Intent(MainActivity.this,LoginActivity.class));
                 finish();
                 return  true;
+            case R.id.view_location:
+                startActivity(new Intent(MainActivity.this,LocationListActivity.class));
 
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
