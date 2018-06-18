@@ -9,6 +9,12 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +22,7 @@ public class CustomLocationListAdapter extends ArrayAdapter {
 
     private Context mContext;
     private List<FirebaseLocationData> locationList= new ArrayList<>();
+    DatabaseReference myUserRef= FirebaseDatabase.getInstance().getReference("Users");
 
     public CustomLocationListAdapter(@NonNull Context context, ArrayList<FirebaseLocationData> list) {
         super(context,0,list);
@@ -52,8 +59,22 @@ public class CustomLocationListAdapter extends ArrayAdapter {
 
 
 
-        TextView name = listItem.findViewById(R.id.pname);
-        name.setText(fld.getName());
+       final TextView name = listItem.findViewById(R.id.pname);
+
+        myUserRef.child(fld.getUid()).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                name.setText(dataSnapshot.getValue(String.class));
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
         TextView email = listItem.findViewById(R.id.pemail);
         email.setText(fld.getEmail());
         TextView loc = listItem.findViewById(R.id.plocation);

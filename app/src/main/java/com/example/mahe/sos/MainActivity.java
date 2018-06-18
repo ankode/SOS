@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -22,6 +23,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,6 +46,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.DateFormat;
 import java.util.Date;
@@ -59,17 +62,25 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final int notification_request_code = 100;
     FusedLocationProviderClient mFusedLocationProviderClient;
     Location lastLocation,lastLocationGpsProvider;
+
+
+    private static final String BACKGROUND_SERVICE_STATUS = "bgServiceStatus";
+    SharedPreferences sharedpreferences;
+    private String MyPREFERENCES="SOS_DATA";
+    private boolean isServiceBackground;
+
     TextView tv;
+    Button b;
 
 
     //Firebase Variables
-    static {
-        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
-    }
+//    static {
+//        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+//    }
     private FirebaseAuth mFirebaseAuth;
     private FirebaseUser mFirebaseuser;
     FirebaseDatabase database;
-    DatabaseReference myRef;
+    DatabaseReference myRef,myUserRef;
     private String mUsername;
     private String mPhotoUrl;
     private ChildEventListener childEventListener;
@@ -90,6 +101,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             myRef.addChildEventListener(childEventListener);
             Log.d(TAG, "onStart: ChildEventListener Attached");
         }
+
+        stopService(new Intent(this,MyService.class));
         super.onStart();
     }
 
@@ -99,6 +112,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (childEventListener != null) {
             myRef.removeEventListener(childEventListener);
             Log.d(TAG, "onStop: ChildEventListener Removed");
+        }
+
+        if(isServiceBackground)
+        {
+            startService(new Intent(this,MyService.class));
+            Log.d(TAG, "onStop: starting service");
         }
         super.onStop();
     }
@@ -114,7 +133,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         tv=findViewById(R.id.textView);
+        b=findViewById(R.id.button);
         nm=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+
+        sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+        isServiceBackground=sharedpreferences.getBoolean(BACKGROUND_SERVICE_STATUS,true);
+
+
         /* firebase initialization */
         mUsername = ANONYMOUS;
 //        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
@@ -122,6 +147,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mFirebaseuser=mFirebaseAuth.getCurrentUser();
         database = FirebaseDatabase.getInstance();
         myRef = database.getReference("Locations");
+        myUserRef=database.getReference("Users");
         myRef.keepSynced(true);
 
         if(mFirebaseuser==null)
@@ -174,19 +200,42 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             public void onChildChanged(DataSnapshot dataSnapshot, String previousChildName) {
                 Log.d(TAG, "onChildChanged:" + dataSnapshot.getKey());
 
-                FirebaseLocationData fld = dataSnapshot.getValue(FirebaseLocationData.class);
-                String locKey = dataSnapshot.getKey();
-                nb= new Notification.Builder(MainActivity.this);
-                nb.setContentTitle("Emergency");
-                nb.setContentText("SOS broadcasted from "+fld.getName());
-                nb.setSmallIcon(android.R.drawable.ic_dialog_alert);
-                nb.setDefaults(Notification.DEFAULT_ALL);
-                Intent i =new Intent(MainActivity.this,MainActivity.class);
-                nb.setAutoCancel(false);
-                PendingIntent pi =PendingIntent.getActivity(MainActivity.this,notification_request_code,i,PendingIntent.FLAG_UPDATE_CURRENT);
-                nb.setContentIntent(pi);
-                n=nb.build();
-                nm.notify(notification_request_code,n);
+
+               final FirebaseLocationData fld = dataSnapshot.getValue(FirebaseLocationData.class);
+
+                myUserRef.child(fld.getUid()).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        String sos_name=dataSnapshot.getValue(String.class);
+                        nb= new Notification.Builder(MainActivity.this);
+                        nb.setContentTitle("Emergency");
+                        nb.setContentText("SOS broadcasted from "+sos_name);
+                        nb.setSmallIcon(android.R.drawable.ic_dialog_alert);
+                        nb.setDefaults(Notification.DEFAULT_ALL);
+                        Intent i =new Intent(MainActivity.this,MapsActivity.class);
+                        Bundle b = new Bundle();
+                        b.putDouble("lat", fld.getLatitude());
+                        b.putDouble("long", fld.getLongitude());
+                        b.putString("name", sos_name);
+                        b.putString("time",fld.getSos_time());
+                        i.putExtras(b);;
+                        nb.setAutoCancel(false);
+                        PendingIntent pi =PendingIntent.getActivity(MainActivity.this,notification_request_code,i,PendingIntent.FLAG_UPDATE_CURRENT);
+                        nb.setContentIntent(pi);
+                        n=nb.build();
+                        nm.notify(notification_request_code,n);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+
+
+
+
+
 //                Toast.makeText(MainActivity.this,fld.getEmail()+" changed", Toast.LENGTH_SHORT).show();
             }
 
@@ -371,7 +420,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     public void onLocationChanged(Location location) {
         if (location != null) {
-            updateUI(location);
+//            updateUI(location);
         }
 
     }
@@ -389,14 +438,33 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     private void updateUserLocationToFirebase( Location location) {
         FirebaseLocationData fld= new FirebaseLocationData(mEmail,location.getLatitude() ,location.getLongitude(),DateFormat.getTimeInstance().format(location.getTime()),DateFormat.getTimeInstance().format(new Date()));
-        fld.setName(mUsername);
+        fld.setUid(mUid);
+        myUserRef.child(mUid).child("name").setValue(mUsername);
         myRef.child(mUid).setValue(fld);
     }
 
 
     public void firebaseSignOut(View view) {
-        mFirebaseAuth.signOut();
-        startActivity(new Intent(MainActivity.this,LoginActivity.class));
-        finish();
+
+       isServiceBackground = !isServiceBackground;
+       SharedPreferences.Editor editor=sharedpreferences.edit();
+       editor.putBoolean(BACKGROUND_SERVICE_STATUS,isServiceBackground);
+       editor.apply();
+        tv.setText(String.valueOf(isServiceBackground));
+       if(isServiceBackground)
+       {
+           b.setText("Stop background Notification");
+
+           Toast.makeText(this, "Background Notification Started\nYou will get SOS notification even if app is closed", Toast.LENGTH_SHORT).show();
+
+       }
+       else
+       {
+           b.setText("Start background Notification");
+
+           Toast.makeText(this, "Background Notification Stopped\nYou won't get notification if app is closed\nPlease Turn it back on", Toast.LENGTH_SHORT).show();
+       }
+
+
     }
 }

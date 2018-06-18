@@ -62,7 +62,7 @@ public class ProfileActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
-                            FirebaseDatabase.getInstance().getReference("Locations").child(mFirebaseuser.getUid()).child("name").setValue(name.getText().toString());
+                            FirebaseDatabase.getInstance().getReference("Users").child(mFirebaseuser.getUid()).child("name").setValue(name.getText().toString());
                             Toast.makeText(ProfileActivity.this, "Name Updated", Toast.LENGTH_SHORT).show();
                         }
                     }

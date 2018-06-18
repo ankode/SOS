@@ -59,7 +59,7 @@ public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "LoginActivity";
     private static final String EMAIL_LIST_KEY = "emailList";
     SharedPreferences sharedpreferences;
-    private String MyPREFERENCES="EmailData";
+    private String MyPREFERENCES="SOS_DATA";
 
     Set<String> emails;
     List<String> emailList = new ArrayList<>();
@@ -284,6 +284,7 @@ public class LoginActivity extends AppCompatActivity {
                                         });
 
                             }
+
                             catch (FirebaseAuthInvalidCredentialsException e) {
                                 Toast.makeText(LoginActivity.this, "Invalid Password", Toast.LENGTH_SHORT).show();
                                 mPasswordView.setError(getString(R.string.error_incorrect_password));
@@ -294,6 +295,7 @@ public class LoginActivity extends AppCompatActivity {
                                 Toast.makeText(LoginActivity.this, "FireBase Authentication Failed", Toast.LENGTH_SHORT).show();
                                 Log.e(TAG, e.getMessage());
                             }
+                            showProgress(false);
 
                         }
 
