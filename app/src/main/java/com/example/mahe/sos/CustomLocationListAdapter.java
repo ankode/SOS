@@ -59,7 +59,7 @@ public class CustomLocationListAdapter extends ArrayAdapter {
         TextView loc = listItem.findViewById(R.id.plocation);
         loc.setText(Double.toString(fld.getLatitude())+"\n"+Double.toString(fld.getLongitude()));
         TextView time = listItem.findViewById(R.id.ptime);
-        name.setText(fld.getSos_time());
+        time.setText(fld.getSos_time());
 
         return listItem;
     }
