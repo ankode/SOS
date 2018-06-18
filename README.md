@@ -16,6 +16,6 @@ Developed by Ankush Anshuman.
 - [x] Sync between online and offline database
 - [ ] Broadcast/Notify to Other Users
 - [ ] Create Profile update/view Activity
-- [ ] Recieve/Read Location of other user
-- [ ] Show Location on MapsActivity
+- [x] Recieve/Read Location of other user
+- [x] Show Location on MapsActivity
 - [ ] Improve UI
