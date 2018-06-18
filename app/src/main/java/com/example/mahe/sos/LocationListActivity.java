@@ -50,9 +50,12 @@ public class LocationListActivity extends AppCompatActivity implements AdapterVi
         childEventListener=new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                if(dataSnapshot.exists())
+                if(dataSnapshot.child("time").exists())
                 {
+
                     FirebaseLocationData fld = dataSnapshot.getValue(FirebaseLocationData.class);
+                    if(fld.isPrivacy())
+                        return;
                     locationDataArrayList.add(fld);
                     firebaseLocationData_ids.add(dataSnapshot.getKey());
                     locationListAdapter.notifyDataSetChanged();

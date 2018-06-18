@@ -148,8 +148,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
                 Log.d(TAG, "onChildAdded:" + dataSnapshot.getKey());
 
-                FirebaseLocationData fld = dataSnapshot.getValue(FirebaseLocationData.class);
-                Toast.makeText(MainActivity.this, fld.getEmail()+" added", Toast.LENGTH_SHORT).show();
+//                FirebaseLocationData fld = dataSnapshot.getValue(FirebaseLocationData.class);
+//                Toast.makeText(MainActivity.this, fld.getEmail()+" added", Toast.LENGTH_SHORT).show();
 
             }
 
@@ -164,7 +164,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 nb.setContentText("SOS broadcasted from "+fld.email.split("@")[0]);
                 nb.setSmallIcon(android.R.drawable.ic_dialog_alert);
                 nb.setDefaults(Notification.DEFAULT_ALL);
-                Intent i =new Intent(MainActivity.this,MainActivity.class);
+                Intent i =new Intent(MainActivity.this,MapsActivity.class);
+                Bundle b = new Bundle();
+                b.putDouble("lat", fld.getLatitude());
+                b.putDouble("long", fld.getLongitude());
+                b.putString("name", fld.getEmail().split("@")[0]);
+                b.putString("time",fld.getSos_time());
+                i.putExtras(b);
+
                 nb.setAutoCancel(false);
                 PendingIntent pi =PendingIntent.getActivity(MainActivity.this,notification_request_code,i,PendingIntent.FLAG_UPDATE_CURRENT);
                 nb.setContentIntent(pi);
