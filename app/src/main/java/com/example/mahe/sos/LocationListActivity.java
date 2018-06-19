@@ -60,7 +60,7 @@ public class LocationListActivity extends AppCompatActivity implements AdapterVi
                     firebaseLocationData_ids.add(dataSnapshot.getKey());
                     locationListAdapter.notifyDataSetChanged();
 //                    Toast.makeText(LocationListActivity.this, dataSnapshot.child("email").getValue(String.class)+"data added", Toast.LENGTH_SHORT).show();
-                    Toast.makeText(LocationListActivity.this, fld.getEmail()+" data added", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(LocationListActivity.this, fld.getEmail()+" data added", Toast.LENGTH_SHORT).show();
                 }
 
 
@@ -75,7 +75,7 @@ public class LocationListActivity extends AppCompatActivity implements AdapterVi
                 locationDataArrayList.remove(pos);
                 locationDataArrayList.add(pos,fld);
                 locationListAdapter.notifyDataSetChanged();
-                Toast.makeText(LocationListActivity.this, fld.getEmail()+" data changed", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(LocationListActivity.this, fld.getEmail()+" data changed", Toast.LENGTH_SHORT).show();
 
 
 

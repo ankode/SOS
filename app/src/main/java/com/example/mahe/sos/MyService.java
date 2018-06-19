@@ -110,7 +110,7 @@ public class MyService extends Service {
 
         if (childEventListener != null)
             myRef.addChildEventListener(childEventListener);
-        Toast.makeText(this, "SOS background service started", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "SOS background service started", Toast.LENGTH_SHORT).show();
 
         return START_STICKY;
     }
@@ -119,7 +119,7 @@ public class MyService extends Service {
     public void onDestroy() {
         if (childEventListener != null)
             myRef.removeEventListener(childEventListener);
-        Toast.makeText(this, "SOS backgroung service stopped", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "SOS backgroung service stopped", Toast.LENGTH_SHORT).show();
         super.onDestroy();
     }
 

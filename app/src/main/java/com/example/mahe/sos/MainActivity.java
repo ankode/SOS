@@ -138,6 +138,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         isServiceBackground=sharedpreferences.getBoolean(BACKGROUND_SERVICE_STATUS,true);
+        if(isServiceBackground)
+            b.setText("Stop background Notification");
+        else
+            b.setText("Start background Notification");
+
+
 
 
         /* firebase initialization */
@@ -182,7 +188,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mUid=mFirebaseuser.getUid();
             if(mFirebaseuser.getPhotoUrl()!=null)
                 mPhotoUrl=mFirebaseuser.getPhotoUrl().toString();
-            Toast.makeText(this, "Welcome "+mUsername, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Welcome\n"+mUsername, Toast.LENGTH_SHORT).show();
 
         }
 
@@ -358,7 +364,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         //write data to firebase
         updateUserLocationToFirebase(lastLocationGpsProvider);
 
-        Toast.makeText(this, "GPS location without google client\n"+lm.getLastKnownLocation(LocationManager.GPS_PROVIDER).toString(), Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "GPS location without google client\n"+lm.getLastKnownLocation(LocationManager.GPS_PROVIDER).toString(), Toast.LENGTH_SHORT).show();
 
 
 
@@ -452,7 +458,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
        SharedPreferences.Editor editor=sharedpreferences.edit();
        editor.putBoolean(BACKGROUND_SERVICE_STATUS,isServiceBackground);
        editor.apply();
-        tv.setText(String.valueOf(isServiceBackground));
+//        tv.setText(String.valueOf(isServiceBackground));
        if(isServiceBackground)
        {
            b.setText("Stop background Notification");

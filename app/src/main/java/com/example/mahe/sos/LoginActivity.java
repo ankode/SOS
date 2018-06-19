@@ -256,7 +256,7 @@ public class LoginActivity extends AppCompatActivity {
                                 throw (task.getException());
                             }
                             catch (FirebaseAuthInvalidUserException e) {
-                                Toast.makeText(LoginActivity.this, "Email doesn't exist, registering..", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(LoginActivity.this, "Registering..", Toast.LENGTH_SHORT).show();
                                 Log.w(TAG, "onComplete: registering user" );
                                 mAuth.createUserWithEmailAndPassword(mEmail, mPassword)
                                         .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
