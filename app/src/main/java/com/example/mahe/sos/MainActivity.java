@@ -313,7 +313,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 return  true;
             case R.id.view_location:
                 startActivity(new Intent(MainActivity.this,LocationListActivity.class));
-
+                return true;
+            case R.id.info:
+                startActivity(new Intent(MainActivity.this,AboutActivity.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

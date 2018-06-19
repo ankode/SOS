@@ -14,4 +14,7 @@
         android:id="@+id/view_location"
         android:icon="@android:drawable/ic_menu_mylocation"
         android:title="View Location" />
+    <item
+        android:id="@+id/info"
+        android:title="App Info" />
 </menu>
