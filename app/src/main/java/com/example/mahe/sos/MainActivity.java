@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Log.d(TAG, "onStop: ChildEventListener Removed");
         }
 
-        if(isServiceBackground)
+        if(isServiceBackground&&FirebaseAuth.getInstance().getCurrentUser()!=null)
         {
             startService(new Intent(this,MyService.class));
             Log.d(TAG, "onStop: starting service");
@@ -420,7 +420,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     public void onLocationChanged(Location location) {
         if (location != null) {
-//            updateUI(location);
+            updateUI(location);
         }
 
     }

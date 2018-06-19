@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -24,6 +25,7 @@ public class MyService extends Service {
 //        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
 //    }
    DatabaseReference myRef,myUserRef;
+
     ChildEventListener childEventListener;
     NotificationManager nm;
     Notification n;
@@ -105,6 +107,7 @@ public class MyService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
         if (childEventListener != null)
             myRef.addChildEventListener(childEventListener);
         Toast.makeText(this, "SOS background service started", Toast.LENGTH_SHORT).show();
