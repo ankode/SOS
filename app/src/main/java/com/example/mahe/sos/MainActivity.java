@@ -2,6 +2,7 @@ package com.example.mahe.sos;
 
 import android.Manifest;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -12,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -89,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     //Notification
     NotificationManager nm;
+    String CHANNEL_ID = "my_sos_channel";// The id of the channel.
     Notification n;
     Notification.Builder nb;
 
@@ -134,7 +137,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         setContentView(R.layout.activity_main);
         tv=findViewById(R.id.textView);
         b=findViewById(R.id.button);
+
         nm=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        CharSequence name = "SOS ALERT";
+        int importance = NotificationManager.IMPORTANCE_HIGH;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
+                    name,
+                    importance);
+            nm.createNotificationChannel(channel);
+        }
+
 
         sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         isServiceBackground=sharedpreferences.getBoolean(BACKGROUND_SERVICE_STATUS,true);
@@ -208,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
 
                final FirebaseLocationData fld = dataSnapshot.getValue(FirebaseLocationData.class);
-
+                Log.d(TAG, "onChildChanged: Creating Notification");
                 myUserRef.child(fld.getUid()).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -217,6 +231,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         nb.setContentTitle("Emergency");
                         nb.setContentText("SOS broadcasted from "+sos_name);
                         nb.setSmallIcon(android.R.drawable.ic_dialog_alert);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            nb.setChannelId(CHANNEL_ID);
+                        }
                         nb.setDefaults(Notification.DEFAULT_ALL);
                         Intent i =new Intent(MainActivity.this,MapsActivity.class);
                         Bundle b = new Bundle();
@@ -230,6 +247,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         nb.setContentIntent(pi);
                         n=nb.build();
                         nm.notify(notification_request_code,n);
+                        Log.d(TAG, "onDataChange: NOTIFICATION CREATED");
                     }
 
                     @Override
@@ -361,8 +379,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         LocationManager lm= (LocationManager) getSystemService(LOCATION_SERVICE);
         lastLocationGpsProvider=lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+
         //write data to firebase
-        updateUserLocationToFirebase(lastLocationGpsProvider);
+
+        if(lastLocationGpsProvider!=null)
+            updateUserLocationToFirebase(lastLocationGpsProvider);
+        else
+        {
+            lastLocationGpsProvider=LocationServices.FusedLocationApi.getLastLocation(gac);
+            if(lastLocationGpsProvider!=null)
+            updateUserLocationToFirebase(lastLocationGpsProvider);
+        }
+
+
 
 //        Toast.makeText(this, "GPS location without google client\n"+lm.getLastKnownLocation(LocationManager.GPS_PROVIDER).toString(), Toast.LENGTH_SHORT).show();
 
@@ -387,6 +417,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Log.d(TAG, "Permission is already given");
         }
 
+        // TODO: use fusedlocaionproviderclient
         /* mFusedLocationProviderClient= LocationServices.getFusedLocationProviderClient(this);
         mFusedLocationProviderClient.getLastLocation()
                 .addOnSuccessListener(this, new OnSuccessListener<Location>() {
@@ -402,11 +433,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 });
         */
         Location ll = LocationServices.FusedLocationApi.getLastLocation(gac);
-        // TODO: use fusedlocaionproviderclient
+
 
         Log.d(TAG, "LastLocation from Deprecated: " + (ll == null ? "NO LastLocation" : ll.toString()));
-        tv.setText("LastLocation from Deprecated: " + (ll == null ? "NO LastLocation" : ll.toString()));
+//        tv.setText("LastLocation from Deprecated: " + (ll == null ? "NO LastLocation" : ll.toString()));
 //        Log.d(TAG, "LastLocation: " + (ll == null ? "NO LastLocation" : lastLocation.toString()));
+         updateUI(ll);
 
         LocationServices.FusedLocationApi.requestLocationUpdates(gac, locationRequest, this);
 
@@ -452,7 +484,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
 
-    public void firebaseSignOut(View view) {
+    public void changeServiceState(View view) { //
 
        isServiceBackground = !isServiceBackground;
        SharedPreferences.Editor editor=sharedpreferences.edit();

@@ -35,7 +35,7 @@
                     android:layout_alignParentBottom="true"
                     android:layout_centerHorizontal="true"
                     android:layout_margin="10dp"
-                    android:onClick="firebaseSignOut"
+                    android:onClick="changeServiceState"
                     android:text="Stop background service"
                     app:layout_constraintBottom_toTopOf="@+id/textView5"
                     app:layout_constraintEnd_toEndOf="parent"

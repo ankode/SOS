@@ -192,11 +192,17 @@ public class LoginActivity extends AppCompatActivity {
 
 
 
-        // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
-            mPasswordView.setError(getString(R.string.error_invalid_password));
+        //check for empty password
+        if (TextUtils.isEmpty(password)){
+
+            mPasswordView.setError("Please set Password");
             focusView = mPasswordView;
             cancel = true;
+        }
+        else if(!isPasswordValid(password)){ // Check for a valid password, if the user entered one.
+            mPasswordView.setError(getString(R.string.error_invalid_password));
+            focusView=mPasswordView;
+            cancel=true;
         }
 
         // Check for a valid email address.

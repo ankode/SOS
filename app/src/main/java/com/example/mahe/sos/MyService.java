@@ -1,10 +1,12 @@
 package com.example.mahe.sos;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
@@ -31,6 +33,7 @@ public class MyService extends Service {
     Notification n;
     private static final String TAG="Service Activity";
     Notification.Builder nb;
+    String CHANNEL_ID = "my_sos_channel";
     int notification_request_code= 200;
 
     public MyService() {
@@ -39,6 +42,16 @@ public class MyService extends Service {
     @Override
     public void onCreate() {
         nm=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        CharSequence name = "SOS ALERT";
+        int importance = NotificationManager.IMPORTANCE_HIGH;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
+                    name,
+                    importance);
+            nm.createNotificationChannel(channel);
+        }
+
         myRef = FirebaseDatabase.getInstance().getReference("Locations");
         myUserRef = FirebaseDatabase.getInstance().getReference("Users");
         childEventListener = new ChildEventListener() {
@@ -61,6 +74,9 @@ public class MyService extends Service {
                         nb.setContentTitle("Emergency");
                         nb.setContentText("SOS broadcasted from "+sos_name);
                         nb.setSmallIcon(android.R.drawable.ic_dialog_alert);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            nb.setChannelId(CHANNEL_ID);
+                        }
                         nb.setDefaults(Notification.DEFAULT_ALL);
                         Intent i =new Intent(MyService.this,MapsActivity.class);
                         Bundle b = new Bundle();
