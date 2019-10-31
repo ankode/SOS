@@ -7,7 +7,7 @@ Developed by Ankush Anshuman.
 ### TODO
 
 - [x] Get User last known location
-- [x] Get user location continiously
+- [x] Get user location continiously with fixed interval
 - [x] Firebase authentication using Email/Password
 - [ ] **Firebase authentication using Google SignIn**
 - [x] Populate Firebase Database
